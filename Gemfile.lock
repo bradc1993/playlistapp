@@ -15,9 +15,11 @@ GEM
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
     coderay (1.1.3)
+    colorize (0.8.1)
     concurrent-ruby (1.1.6)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    equatable (0.5.0)
     faraday (0.17.3)
       multipart-post (>= 1.2, < 3)
     hashie (4.1.0)
@@ -38,6 +40,7 @@ GEM
     multipart-post (2.1.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
+    necromancer (0.4.0)
     netrc (0.11.0)
     oauth2 (1.4.4)
       faraday (>= 0.8, < 2.0)
@@ -51,6 +54,9 @@ GEM
     omniauth-oauth2 (1.5.0)
       oauth2 (~> 1.1)
       omniauth (~> 1.2)
+    pastel (0.7.2)
+      equatable (~> 0.5.0)
+      tty-color (~> 0.4.0)
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -80,17 +86,26 @@ GEM
     sqlite3 (1.4.2)
     thread_safe (0.3.6)
     tilt (2.0.10)
+    tty-color (0.4.3)
+    tty-cursor (0.4.0)
+    tty-prompt (0.12.0)
+      necromancer (~> 0.4.0)
+      pastel (~> 0.7.0)
+      tty-cursor (~> 0.4.0)
+      wisper (~> 1.6.1)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
+    wisper (1.6.1)
     zeitwerk (2.3.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  colorize
   launchy
   pry
   rake
@@ -98,6 +113,7 @@ DEPENDENCIES
   rspotify
   sinatra-activerecord
   sqlite3
+  tty-prompt
 
 BUNDLED WITH
    2.1.4
