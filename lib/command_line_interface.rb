@@ -24,6 +24,10 @@ class CommandLineInterface
         puts "---------------------------".green.bold
     end
 
+#########################################################
+#       USER AUTHENTICATION                             #
+#########################################################
+
     def login_or_sign_up
         print "\nHave you used the app before? y/n ".green
         response = gets.chomp
@@ -41,13 +45,29 @@ class CommandLineInterface
         print "\nPlease enter a username: ".green
         username = gets.chomp
 
-        password = TTY::Prompt.new
-        password = password.mask("Please enter your password:".green)
+        if User.find_by(username: username)
+            puts "Sorry! That username is already taken. Try being more original.".red
+            create_new_account
+        end
+
+        flag = true
+        while flag
+            password = TTY::Prompt.new
+            password = password.mask("Please enter your password:".green)
+            password_confirmation = TTY::Prompt.new
+            password_confirmation = password_confirmation.mask("Please confirm your password:".green)
+
+            if password == password_confirmation
+                flag = false
+            else
+                puts "\nYour passwords didn't match. Please try again but stay focused this time.".red
+            end
+        end
 
         @current_user = User.create(username: username, password: password)
 
         puts "\n---------------------------".green
-        puts "\nWELCOME, #{username}!".green.bold
+        puts "\nWELCOME, #{@current_user.username}!".green.bold
     end
 
     def get_username_and_password
@@ -65,17 +85,31 @@ class CommandLineInterface
 
                 puts "\n---------------------------".green
                 puts "\nWELCOME BACK, #{username}!".green.bold
-
+                display_main_menu
             else
                 puts "Password incorrect, please try again".red
                 get_username_and_password
             end
 
         else
-            puts "Username not found, please try again".red
-            get_username_and_password
+            puts "\nUsername not found, please try again".red
+            print "Would you like to try creating a new account? (y/n) :".red
+            response = gets.chomp
+
+            if response == "y"
+                create_new_account
+            elsif response == "n"
+                get_username_and_password
+            else
+                "Input not recognized. Please enter 'y' or 'n'"
+                get_username_and_password
+            end
         end
     end
+
+#########################################################
+#       MENU DISPLAYS                                   #
+#########################################################
 
     def display_main_menu
         puts "\nWhat would you like to do?".green
