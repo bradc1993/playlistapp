@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
-    has_many :playlists
+    has_many :user_playlists
+    has_many :playlists, through: :user_playlists
 
     def self.view_all_playlists
         Playlist.all

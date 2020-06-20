@@ -24,10 +24,6 @@ class Song < ActiveRecord::Base
         return true
     end
 
-    def self.add_song_to_playlist(song, playlist)
-
-    end
-
     def self.open_song_in_web(song)
         if song
             Launchy.open("https://open.spotify.com/track/#{song[0].id}")

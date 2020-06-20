@@ -1,21 +1,27 @@
 require "colorize"
 require "tty-prompt"
+require "pry"
 
 class CommandLineInterface
 
-    current_username = ""
+    attr_accessor :current_user
+
+    @current_user = nil
 
     def menu
         welcome
         login_or_sign_up
         display_main_menu
     end
+
+    def clear_screen
+        system("clear")
+    end
     
     def welcome
         puts "\n---------------------------".green.bold
         puts "WELCOME TO THE PLAYLIST APP".green.bold
         puts "---------------------------".green.bold
-        sleep(2)
     end
 
     def login_or_sign_up
@@ -38,29 +44,27 @@ class CommandLineInterface
         password = TTY::Prompt.new
         password = password.mask("Please enter your password:".green)
 
-        User.create(username: username, password: password)
-
-        current_username = username
+        @current_user = User.create(username: username, password: password)
 
         puts "\n---------------------------".green
         puts "\nWELCOME, #{username}!".green.bold
-        sleep(2)
     end
 
     def get_username_and_password
         print "\nPlease enter your username: ".green
         username = gets.chomp
-        current_username = username
+
 
         if User.find_by(username: username) != nil
             password = TTY::Prompt.new
             password = password.mask("Please enter your password:".green)
-            sleep(1)
 
             if User.find_by(username: username, password: password) != nil
+
+                @current_user = User.find_by(username: username)
+
                 puts "\n---------------------------".green
                 puts "\nWELCOME BACK, #{username}!".green.bold
-                sleep(2)
 
             else
                 puts "Password incorrect, please try again".red
@@ -76,8 +80,6 @@ class CommandLineInterface
     def display_main_menu
         puts "\nWhat would you like to do?".green
 
-        sleep(2)
-
         puts "\n1. Create new playlist".green
         puts "2. View my playlists".green
         puts "3. Log out".green
@@ -85,12 +87,10 @@ class CommandLineInterface
         print "\nEnter a number: ".green.bold
         response = gets.chomp
 
-        # stretch goal: 4. Add song to another user's queue
         if response == "1"
             display_create_playlist_menu
         elsif response == "2"
-            # insert method here: view_user_playlists
-            puts "test"
+            display_view_playlists
         elsif response == "3"
             # insert method here: log_out
             puts "test"
@@ -125,7 +125,8 @@ class CommandLineInterface
         number = gets.chomp.to_i
 
         song_name = results[number-1].name
-        song_artist = results[number - 1].artists[0].name
+        song_artist = results[number-1].artists[0].name
+        song_spotify_id = results[number-1].id
 
         puts "You choose #{song_name.upcase} by #{song_artist.upcase}"
         puts "If this is correct, please enter 'add'"
@@ -134,7 +135,12 @@ class CommandLineInterface
         response = gets.chomp
 
         if response == "add"
-            playlist.songs << Song.new(name: song_name, artist: song_artist)
+            song = Song.find_by(name: song_name, artist: song_artist)
+            if song 
+                playlist.songs << song
+            else
+                playlist.songs << Song.new(name: song_name, artist: song_artist, spotify_id: song_spotify_id)
+            end
         else
             add_song_to_playlist_menu(playlist)
         end
@@ -153,6 +159,8 @@ class CommandLineInterface
 
         if response == "save"
             playlist.save
+            @current_user.playlists << playlist
+
         elsif response == "search"
             add_song_to_playlist_menu(playlist)
         else
@@ -160,6 +168,22 @@ class CommandLineInterface
         end
     end
 
-    def display_view_playlist_menu
+    def display_view_playlists
+        puts "Here are the playlists created by #{@current_user.username}"
+        @current_user.playlists.each_with_index do |playlist, index|
+            puts "#{index + 1}. #{playlist.name} - #{playlist.description}"
+        end
+
+        puts "Please select a playlist using the corresponding number"
+        print "Enter a number: "
+        response = gets.chomp.to_i
+
+        selected_playlist = @current_user.playlists[response - 1]
+
+        puts "Songs in #{selected_playlist.name}:"
+
+        selected_playlist.songs.each_with_index do |song, index|
+            puts "#{index + 1}. #{song.name} by #{song.artist}"
+        end
     end
 end
