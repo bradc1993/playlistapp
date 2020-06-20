@@ -185,5 +185,23 @@ class CommandLineInterface
         selected_playlist.songs.each_with_index do |song, index|
             puts "#{index + 1}. #{song.name} by #{song.artist}"
         end
+
+        puts "What would you like to do?"
+        puts "1. Add song to #{selected_playlist.name}"
+        puts "2. Listen to a song on #{selected_playlist.name}"
+        print "Please enter a number: "
+        response = gets.chomp
+
+        if response == "1"
+            add_song_to_playlist_menu(selected_playlist)
+        elsif response == "2"
+            puts "Which song would you like to play? Please enter a corresponding number"
+            print "Response: "
+            response = gets.chomp.to_i
+            Song.open_song_in_web(selected_playlist.songs[response-1])
+        else
+            "response not recognized, please try again"
+        end
+
     end
 end

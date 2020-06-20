@@ -26,7 +26,7 @@ class Song < ActiveRecord::Base
 
     def self.open_song_in_web(song)
         if song
-            Launchy.open("https://open.spotify.com/track/#{song[0].id}")
+            Launchy.open("https://open.spotify.com/track/#{song.spotify_id}")
             return true
         else
             return false
