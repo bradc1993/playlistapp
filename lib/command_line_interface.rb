@@ -9,6 +9,7 @@ class CommandLineInterface
     @current_user = nil
 
     def menu
+        clear_screen
         welcome
         login_or_sign_up
         display_main_menu
@@ -19,9 +20,7 @@ class CommandLineInterface
     end
     
     def welcome
-        puts "\n---------------------------".green.bold
-        puts "WELCOME TO THE PLAYLIST APP".green.bold
-        puts "---------------------------".green.bold
+        display_banner("welcome to the playlist app!")
     end
 
 #########################################################
@@ -29,7 +28,7 @@ class CommandLineInterface
 #########################################################
 
     def login_or_sign_up
-        print "\nHave you used the app before? y/n ".green
+        print "\nHave you used the app before? (enter: 'y' or 'n') ".green
         response = gets.chomp
         if response == "y"
             get_username_and_password
@@ -41,50 +40,75 @@ class CommandLineInterface
         end
     end
 
+######################
+# create a new account
+######################
+
     def create_new_account
+
+        clear_screen
+        welcome
+        
         print "\nPlease enter a username: ".green
         username = gets.chomp
 
         if User.find_by(username: username)
-            puts "Sorry! That username is already taken. Try being more original.".red
+            puts "\nSORRY! THAT USERNAME HAS ALREADY BEEN TAKEN. TRY BEING MORE ORIGINAL.".red.bold
+            
+            sleep(5)
+
             create_new_account
         end
 
         flag = true
         while flag
             password = TTY::Prompt.new
-            password = password.mask("Please enter your password:".green)
+            password = password.mask("Enter your password:".green)
             password_confirmation = TTY::Prompt.new
-            password_confirmation = password_confirmation.mask("Please confirm your password:".green)
+            password_confirmation = password_confirmation.mask("Confirm your password:".green)
 
             if password == password_confirmation
                 flag = false
             else
-                puts "\nYour passwords didn't match. Please try again but stay focused this time.".red
+                clear_screen
+                welcome
+
+                puts "\nYour passwords didn't match. Try again but stay focused this time.".red.bold
             end
         end
 
         @current_user = User.create(username: username, password: password)
 
-        puts "\n---------------------------".green
-        puts "\nWELCOME, #{@current_user.username}!".green.bold
+        clear_screen
+        display_banner("welcome, #{@current_user.username}!")
     end
 
+####################################
+# sign in if account already created
+####################################
+
     def get_username_and_password
-        print "\nPlease enter your username: ".green
+
+        clear_screen
+        welcome
+
+        print "\nEnter your username: ".green
         username = gets.chomp
 
 
         if User.find_by(username: username) != nil
             password = TTY::Prompt.new
-            password = password.mask("Please enter your password:".green)
+            password = password.mask("Enter your password:".green)
 
             if User.find_by(username: username, password: password) != nil
 
                 @current_user = User.find_by(username: username)
 
-                puts "\n---------------------------".green
-                puts "\nWELCOME BACK, #{username}!".green.bold
+                clear_screen
+                display_banner("welcome back, #{username.upcase}!")
+
+                sleep(2)
+
                 display_main_menu
             else
                 puts "Password incorrect, please try again".red
@@ -92,8 +116,12 @@ class CommandLineInterface
             end
 
         else
-            puts "\nUsername not found, please try again".red
-            print "Would you like to try creating a new account? (y/n) :".red
+
+            clear_screen
+            welcome
+
+            puts "\nUsername not found, please try again".red.bold
+            print "\nWould you like to try creating a new account? (y/n) :".green
             response = gets.chomp
 
             if response == "y"
@@ -101,7 +129,7 @@ class CommandLineInterface
             elsif response == "n"
                 get_username_and_password
             else
-                "Input not recognized. Please enter 'y' or 'n'"
+                "Input not recognized. Please enter 'y' or 'n'".red
                 get_username_and_password
             end
         end
@@ -111,8 +139,14 @@ class CommandLineInterface
 #       MENU DISPLAYS                                   #
 #########################################################
 
+###########
+# main menu
+###########
+
     def display_main_menu
-        puts "\nWhat would you like to do?".green
+        puts "\nWhat would you like to do?".green.bold
+
+        sleep(2)
 
         puts "\n1. Create new playlist".green
         puts "2. View my playlists".green
@@ -127,7 +161,9 @@ class CommandLineInterface
             if @current_user.playlists.length > 0
                 display_view_playlists
             else
-                puts "You don't have any playlists yet!".red
+                clear_screen
+                puts "\nYou don't have any playlists yet!".red.bold
+                sleep(2)
                 display_main_menu
             end
         elsif response == "3"
@@ -139,11 +175,20 @@ class CommandLineInterface
         end
     end
 
+#######################
+# create a new playlist
+#######################
+
     def display_create_playlist_menu
-        puts "Please enter a name and description for your playlist:"
-        print "\nPlaylist Name: "
+
+        clear_screen
+        display_banner("Enter a name and description for your playlist:")
+
+        sleep(3)
+
+        print "\nPlaylist Name: ".green
         playlist_name = gets.chomp
-        print "\nPlaylist Description: "
+        print "\nPlaylist Description: ".green
         playlist_description = gets.chomp
 
         new_playlist = Playlist.create_new_playlist(playlist_name, playlist_description)
@@ -151,26 +196,50 @@ class CommandLineInterface
         add_song_to_playlist_menu(new_playlist)
     end
 
+##############################
+# add a new song to a playlist
+##############################
+
     def add_song_to_playlist_menu(playlist)
-        puts "Please enter a song name you would like to add to #{playlist.name.upcase}"
-        print "\nEnter a song name: "
+
+        clear_screen
+        
+        display_banner("enter a song you would like to add to { #{playlist.name.upcase} }")
+
+        print "\nEnter a song by name: ".green
         song_search = gets.chomp
 
         results = Song.search_song_by_title(song_search)
-        Song.display_results(results)
 
-        puts "Please enter a number to add a song to #{playlist.name.upcase} or enter 's' to search again"
-        print "Enter a number: "
+        clear_screen
+
+        display_banner("top search results")
+        
+        results.each_with_index do |track, index|
+            sleep(1)
+            puts "#{index + 1}. #{track.name} - #{track.artists[0].name}".yellow
+        end
+
+        sleep(1)
+
+        print "\nEnter a number to add a song to #{playlist.name.upcase} or enter the number '0' to search again: ".green
         number = gets.chomp.to_i
+
+        if number == 0
+            add_song_to_playlist_menu(playlist)
+        end
 
         song_name = results[number-1].name
         song_artist = results[number-1].artists[0].name
         song_spotify_id = results[number-1].id
 
-        puts "You choose #{song_name.upcase} by #{song_artist.upcase}"
-        puts "If this is correct, please enter 'add'"
-        puts "Otherwise, press enter to search again"
-        print "Response: "
+        clear_screen
+
+        display_banner("You chose { #{song_name.upcase} by #{song_artist.upcase} }")
+
+        sleep(2)
+
+        print "\nType 'add' to save this song to #{playlist.name.upcase} or press enter to search again: ".green
         response = gets.chomp
 
         if response == "add"
@@ -181,66 +250,129 @@ class CommandLineInterface
                 playlist.songs << Song.new(name: song_name, artist: song_artist, spotify_id: song_spotify_id)
             end
         else
+            clear_screen
             add_song_to_playlist_menu(playlist)
         end
 
-        puts "You just added #{song_name.upcase} to your playlist #{playlist.name.upcase}"
-        puts "Here is your current playlist: "
-        puts "#{playlist.name}: "
-        playlist.songs.each do |song|
-            puts song.name
+        clear_screen
+
+        display_banner("You just added { #{song_name.upcase} } to your playlist { #{playlist.name.upcase} }")
+
+        sleep(4)
+
+        clear_screen
+
+        display_banner("Updated track list for #{playlist.name.upcase}: ")
+
+        sleep(2)
+
+        playlist.songs.each_with_index do |song, index|
+            puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
+            sleep(1)
         end
 
-        puts "To save your playlist #{playlist.name.upcase}, please enter 'save'"
-        puts "To add another song to your playlist #{playlist.name.upcase}, please enter 'search'"
-        print "Response: "
+        puts "\nWould you like to 'save' this playlist or 'add' another song?".green
+
+        print "\nEnter 'save' or 'add': ".green.bold
         response = gets.chomp
 
         if response == "save"
-            playlist.save
-            @current_user.playlists << playlist
+            if @current_user.playlists.include? playlist
+                playlist.save
+                clear_screen
+                display_banner("{ #{playlist.name.upcase} } has been updated!")
+            else
+                @current_user.playlists << playlist
+                clear_screen
+                display_banner("{ #{playlist.name.upcase} } has been saved to your playlists!")
+            end
 
-        elsif response == "search"
+            sleep(3)
+            clear_screen
+            welcome
+            display_main_menu
+
+        elsif response == "add"
+            clear_screen
             add_song_to_playlist_menu(playlist)
         else
             "please learn to read"
         end
     end
 
+###########################
+# display created playlists
+###########################
+
     def display_view_playlists
-        puts "Here are the playlists created by #{@current_user.username}"
+
+        clear_screen
+
+        display_banner("playlists created by #{@current_user.username.upcase}: ")
+
+
         @current_user.playlists.each_with_index do |playlist, index|
-            puts "#{index + 1}. #{playlist.name} - #{playlist.description}"
+            puts "\n#{index + 1}. #{playlist.name} - #{playlist.description}".yellow
         end
 
-        puts "Please select a playlist using the corresponding number"
-        print "Enter a number: "
+        print "\nSelect a playlist by entering the corresponding number: ".green
         response = gets.chomp.to_i
 
-        selected_playlist = @current_user.playlists[response - 1]
+        selected_playlist = @current_user.playlists[response-1]
 
-        puts "Songs in #{selected_playlist.name}:"
+        clear_screen
+
+        display_banner("#{selected_playlist.name.upcase} TRACK LIST:")
+
+        sleep(1)
 
         selected_playlist.songs.each_with_index do |song, index|
-            puts "#{index + 1}. #{song.name} by #{song.artist}"
+            puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
+            sleep(1)
         end
 
-        puts "What would you like to do?"
-        puts "1. Add song to #{selected_playlist.name}"
-        puts "2. Listen to a song on #{selected_playlist.name}"
-        print "Please enter a number: "
+        puts "\nWhat would you like to do?".green.bold
+
+        sleep(1)
+
+        puts "\n1. Add song to #{selected_playlist.name.upcase}".green
+        puts "2. Listen to a song on #{selected_playlist.name.upcase}".green
+        print "\nEnter a number: ".green.bold
         response = gets.chomp
 
         if response == "1"
+            clear_screen
             add_song_to_playlist_menu(selected_playlist)
+
         elsif response == "2"
-            puts "Which song would you like to play? Please enter a corresponding number"
-            print "Response: "
-            response = gets.chomp.to_i
-            Song.open_song_in_web(selected_playlist.songs[response-1])
+            clear_screen
+            display_banner("which song would you like to play?")
+
+            selected_playlist.songs.each_with_index do |song, index|
+                puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
+            end
+
+            print "\nEnter a number:".green.bold
+            new_response = gets.chomp.to_i
+            Song.open_song_in_web(selected_playlist.songs[new_response-1])
+
+            clear_screen
+            welcome
+            display_main_menu
         else
             "response not recognized, please try again"
         end
 
     end
+
+##################################
+# DISPLAY BANNERS                #
+##################################
+
+    def display_banner(text)
+        puts ("-" * text.length).green.bold
+        puts text.upcase.green.bold
+        puts ("-" * text.length).green.bold
+    end
+
 end
