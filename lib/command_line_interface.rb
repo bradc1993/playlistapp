@@ -124,7 +124,12 @@ class CommandLineInterface
         if response == "1"
             display_create_playlist_menu
         elsif response == "2"
-            display_view_playlists
+            if @current_user.playlists.length > 0
+                display_view_playlists
+            else
+                puts "You don't have any playlists yet!".red
+                display_main_menu
+            end
         elsif response == "3"
             # insert method here: log_out
             puts "test"
@@ -135,7 +140,7 @@ class CommandLineInterface
     end
 
     def display_create_playlist_menu
-        puts "Please enter a name and description for your playlist or enter 'm' for Main Menu"
+        puts "Please enter a name and description for your playlist:"
         print "\nPlaylist Name: "
         playlist_name = gets.chomp
         print "\nPlaylist Description: "
