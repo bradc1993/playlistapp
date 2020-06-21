@@ -241,8 +241,9 @@ class CommandLineInterface
             update_playlist_menu(song_search_results, playlist)
 
         else
-            puts "response not recognized, please try again"
-            add_song_to_playlist_menu
+            puts "\nresponse not recognized, please try again".red
+            sleep(1)
+            add_song_to_playlist_menu(playlist)
         end
     end
 
