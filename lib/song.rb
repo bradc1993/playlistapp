@@ -7,6 +7,11 @@ class Song < ActiveRecord::Base
        results = RSpotify::Track.search(title, limit: 5, market: 'US')
        results
     end 
+
+    def self.search_songs_by_artist(artist) 
+        results = RSpotify::Artist.search(artist)[0].top_tracks('US')
+        results
+     end 
        
     def self.display_results(tracks)
         tracks.each_with_index do |track, index|
