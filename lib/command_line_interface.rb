@@ -83,6 +83,7 @@ class CommandLineInterface
 
         clear_screen
         display_banner("welcome, #{@current_user.username}!")
+        display_main_menu
     end
 
 ####################################
@@ -169,8 +170,7 @@ class CommandLineInterface
                 display_main_menu
             end
         elsif response == "3"
-            clear_screen
-            welcome
+            menu
         else
             puts "\nResponse not recognized. Please try again.\n".red
             display_main_menu
@@ -251,7 +251,7 @@ class CommandLineInterface
     def update_playlist_menu(results, playlist)
 
        results.each_with_index do |track, index|
-            sleep(1)
+            sleep(0.5)
             puts "#{index + 1}. #{track.name} - #{track.artists[0].name}".yellow
         end
 
@@ -375,8 +375,7 @@ class CommandLineInterface
 
         puts "\n1. Add song to #{selected_playlist.name.upcase}".green
         puts "2. Listen to a song on #{selected_playlist.name.upcase}".green
-        puts "3. Remove song from #{selected_playlist.name.upcase}".green
-        puts "4. Return to main menu".green
+        puts "3. Return to main menu".green
         print "\nEnter a number: ".green.bold
         response = gets.chomp
 
@@ -401,9 +400,6 @@ class CommandLineInterface
             display_main_menu
         elsif response == "3"
             clear_screen
-            remove_song_from_playlist_menu(selected_playlist)
-        elsif response == "4"
-            clear_screen
             display_main_menu
         else
             "response not recognized, please try again"
@@ -424,7 +420,7 @@ class CommandLineInterface
 
         selected_playlist.songs.each_with_index do |song, index|
             puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
-            sleep(1)
+            sleep(0.5)
         end
 
         puts "\nSelect a song to delete by entering the corresponding number, or type '0' to return to the main menu".green
