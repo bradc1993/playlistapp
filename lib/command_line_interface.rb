@@ -21,6 +21,7 @@ class CommandLineInterface
     
     def welcome
         display_banner("welcome to the playlist app!")
+        sleep(1)
     end
 
 #########################################################
@@ -167,8 +168,8 @@ class CommandLineInterface
                 display_main_menu
             end
         elsif response == "3"
-            # insert method here: log_out
-            puts "test"
+            clear_screen
+            welcome
         else
             puts "\nResponse not recognized. Please try again.\n".red
             display_main_menu
@@ -184,7 +185,7 @@ class CommandLineInterface
         clear_screen
         display_banner("Enter a name and description for your playlist:")
 
-        sleep(3)
+        sleep(1)
 
         print "\nPlaylist Name: ".green
         playlist_name = gets.chomp
@@ -199,23 +200,55 @@ class CommandLineInterface
 ##############################
 # add a new song to a playlist
 ##############################
-
+    
     def add_song_to_playlist_menu(playlist)
 
         clear_screen
         
-        display_banner("enter a song you would like to add to { #{playlist.name.upcase} }")
+        display_banner("ADD SONGS TO #{playlist.name.upcase}")
+        puts " \nSearch by song title or browse top tracks by artist?".green.bold
+        print "\nenter 'title' or 'artist': ".green
+        response = gets.chomp.downcase
+        if response == "artist"
+            
+            clear_screen
+            display_banner("enter an artist to search")
 
-        print "\nEnter a song by name: ".green
-        song_search = gets.chomp
+            print "\nEnter an artist by name: ".green
+            artist_search = gets.chomp
+            
+            artist_search_results = Song.search_songs_by_artist(artist_search)
+            
+            clear_screen
+            display_banner("top songs by artist")
 
-        results = Song.search_song_by_title(song_search)
+            update_playlist_menu(artist_search_results, playlist)
 
-        clear_screen
-
-        display_banner("top search results")
         
-        results.each_with_index do |track, index|
+        elsif response == "title"    
+
+            clear_screen
+            display_banner("enter a song you would like to add to { #{playlist.name.upcase} }")
+
+            print "\nEnter a song by name: ".green
+            song_search = gets.chomp
+
+            song_search_results = Song.search_song_by_title(song_search)
+            
+            clear_screen
+            display_banner("top search results")
+            
+            update_playlist_menu(song_search_results, playlist)
+
+        else
+            puts "response not recognized, please try again"
+            add_song_to_playlist_menu
+        end
+    end
+
+    def update_playlist_menu(results, playlist)
+
+       results.each_with_index do |track, index|
             sleep(1)
             puts "#{index + 1}. #{track.name} - #{track.artists[0].name}".yellow
         end
@@ -270,6 +303,7 @@ class CommandLineInterface
             puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
             sleep(1)
         end
+        
 
         puts "\nWould you like to 'save' this playlist or 'add' another song?".green
 
@@ -287,10 +321,10 @@ class CommandLineInterface
                 display_banner("{ #{playlist.name.upcase} } has been saved to your playlists!")
             end
 
-            sleep(3)
-            clear_screen
-            welcome
-            display_main_menu
+        sleep(3)
+        clear_screen
+        welcome
+        display_main_menu
 
         elsif response == "add"
             clear_screen
@@ -298,7 +332,9 @@ class CommandLineInterface
         else
             "please learn to read"
         end
+
     end
+
 
 ###########################
 # display created playlists
@@ -337,6 +373,8 @@ class CommandLineInterface
 
         puts "\n1. Add song to #{selected_playlist.name.upcase}".green
         puts "2. Listen to a song on #{selected_playlist.name.upcase}".green
+        puts "3. Remove song from #{selected_playlist.name.upcase}".green
+        puts "4. Return to main menu".green
         print "\nEnter a number: ".green.bold
         response = gets.chomp
 
@@ -359,9 +397,54 @@ class CommandLineInterface
             clear_screen
             welcome
             display_main_menu
+        elsif response == "3"
+            clear_screen
+            remove_song_from_playlist_menu(selected_playlist)
+        elsif response == "4"
+            clear_screen
+            display_main_menu
         else
             "response not recognized, please try again"
         end
+
+    end
+
+##############################
+# remove song from playlist
+##############################
+
+    def remove_song_from_playlist_menu(selected_playlist)
+        clear_screen
+
+        display_banner("#{selected_playlist.name.upcase} TRACK LIST:")
+
+        sleep(1)
+
+        selected_playlist.songs.each_with_index do |song, index|
+            puts "#{index + 1}. #{song.name} by #{song.artist}".yellow
+            sleep(1)
+        end
+
+        puts "\nSelect a song to delete by entering the corresponding number, or type '0' to return to the main menu".green
+        sleep(1)
+        print "\nEnter a number: ".green.bold
+    
+        response = gets.chomp.to_i
+
+        if response == 0
+            clear_screen
+            display_main_menu
+        elsif response != 0
+            # binding.pry
+            PlaylistSong.delete_by(playlist_id: selected_playlist.id, song_id: selected_playlist.songs[response-1].id)
+            remove_song_from_playlist_menu(selected_playlist)
+        else
+            puts "response not recognized, please try again".green
+            clear_screen
+            remove_song_from_playlist_menu(selected_playlist)
+        end
+            
+
 
     end
 

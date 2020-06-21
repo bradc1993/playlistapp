@@ -6,11 +6,16 @@ class Song < ActiveRecord::Base
     def self.search_song_by_title(title) 
        results = RSpotify::Track.search(title, limit: 5, market: 'US')
        results
-    end 
+    end
+
+    def self.search_songs_by_artist(artist)
+        results = RSpotify::Artist.search(artist)[0].top_tracks(:US)
+        results
+    end
        
     def self.display_results(tracks)
         tracks.each_with_index do |track, index|
-            puts "#{index + 1}. #{track.name} - #{track.artists[0].name}"
+            puts "#{index + 1}. #{track.name} - #{track.artists[0].name}".yellow
         end
         return true
     end
@@ -23,5 +28,7 @@ class Song < ActiveRecord::Base
             return false
         end
     end
+
+
 
 end
